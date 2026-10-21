@@ -1,14 +1,13 @@
 # TR-TAA: Transformation-Robust Task-Agnostic Attack
 
-Code, trained downstream heads and result files for the paper
+
 **"TR-TAA: A Transformation-Robust Task-Agnostic Attack on Vision Foundation Models"**.
 
 ![overview](figures/teaser.png)
 
 TR-TAA perturbs the shared, mean-centred patch-token representation of a
 frozen vision encoder, without access to any downstream task, label or
-head. Unlike the Task-Agnostic Attack (TAA) of Pulfer et al. (CVPRW 2025),
-the perturbation is optimised in expectation over randomly sampled,
+head. The perturbation is optimised in expectation over randomly sampled,
 differentiable image transformations, against a fixed clean reference.
 The same perturbation then degrades five downstream tasks (multi-label
 classification, semantic segmentation, monocular depth estimation, image
@@ -21,9 +20,6 @@ The core attack is in [`src/eot_attack.py`](src/eot_attack.py)
 `sample_random_transform`). The TAA baseline is in
 [`src/attacks.py`](src/attacks.py) (`task_agnostic_attack`).
 
-> **Naming.** In file names, result keys and table headers, TR-TAA appears
-> under its working name **EoT-TAA** (e.g. `EoT-TAA K=8`, `cls_adv_images_K8.pt`,
-> `evaluate_eot_taa_*.py`). Both names refer to the same method.
 
 ## Repository structure
 
