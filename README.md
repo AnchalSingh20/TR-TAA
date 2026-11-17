@@ -3,7 +3,7 @@
 
 **"TR-TAA: A Transformation-Robust Task-Agnostic Attack on Vision Foundation Models"**.
 
-![overview](figures/teaser.png)
+
 
 TR-TAA perturbs the shared, mean-centred patch-token representation of a
 frozen vision encoder, without access to any downstream task, label or
@@ -142,61 +142,6 @@ python scripts/attack_paligemma_vision_tower.py --vqav2_root <VQAv2> --attack eo
 python scripts/evaluate_vqa_paligemma.py        --vqav2_root <VQAv2> --transforms
 ```
 
-**5. Cross-encoder transfer** (uses the VOC caches of both backbones).
 
-```bash
-python scripts/evaluate_cross_encoder_transfer.py
-python scripts/rescore_multilabel_all.py --target cross_encoder --pascalvoc_root <VOC2012>
-```
-
-**6. Ablations** (first 500 VOC val images per task, K = 8).
-
-```bash
-python scripts/ablation_transform_both.py        --pascalvoc_root <VOC2012> --model_name <model>          # reference construction
-python scripts/ablation_transform_families.py    --pascalvoc_root <VOC2012> --model_name dinov2_vits14   # transformation families
-python scripts/ablation_transform_probability.py --pascalvoc_root <VOC2012> --model_name dinov2_vits14   # application probabilities
-python scripts/ablation_transform_range.py       --pascalvoc_root <VOC2012> --model_name dinov2_vits14   # parameter ranges
-python scripts/rescore_multilabel_all.py --target table13 --pascalvoc_root <VOC2012>   # multi-label mAP, reference construction
-python scripts/rescore_multilabel_all.py --target table14 --pascalvoc_root <VOC2012>   # multi-label mAP, families
-python scripts/rescore_multilabel_all.py --target table15 --pascalvoc_root <VOC2012>   # multi-label mAP, probability + range
-```
-
-The ablation and cross-encoder scripts score classification with the
-single-label head; the multi-label mAP reported in the paper comes from
-`rescore_multilabel_all.py`, which re-scores the same cached images.
-Segmentation numbers are taken directly from the ablation scripts.
-
-**7. Input-preprocessing defenses (ViT-B/14).**
-
-```bash
-C="--model_name dinov2_vitb14 --cache_dir ./outputs/cached_images_clean/dinov2_vitb14 \
-   --taa_cache_dir ./outputs/cached_images/dinov2_vitb14 --no_diffpure"
-python scripts/evaluate_defenses_voc.py $C --jpeg_qualities 90 75 50 30 10 --no_bitdepth --no_resize_pad --no_median --no_dither --tag jpegsweep
-python scripts/evaluate_defenses_voc.py $C --jpeg_qualities 75 --no_dither --tag defenses4_full
-python scripts/evaluate_defenses_voc.py $C --jpeg_qualities 75 --no_bitdepth --no_resize_pad --no_median --tag dither_full
-python scripts/rescore_multilabel_all.py --target table16       --pascalvoc_root <VOC2012>
-python scripts/rescore_multilabel_all.py --target jpegsweep_cls --pascalvoc_root <VOC2012>
-python scripts/evaluate_depth_nyuv2.py --nyuv2_root <NYUv2> --model_name dinov2_vitb14 --defenses
-python scripts/evaluate_depth_nyuv2.py --nyuv2_root <NYUv2> --model_name dinov2_vitb14 --dither
-for c in clean taa k8; do
-  python scripts/evaluate_roxford_transforms.py --roxford_root <ROxford> --model_name dinov2_vitb14 --condition $c --scales 1.0 --tag defenses
-done
-python scripts/evaluate_vqa_paligemma.py --vqav2_root <VQAv2> --defenses
-python scripts/evaluate_vqa_paligemma.py --vqav2_root <VQAv2> --dither
-python scripts/defense_results.py          # prints every defense number
-```
-
-**8. Seed stability and significance tests (ViT-B/14, seeds 0/1/2).**
-
-```bash
-for s in 0 1 2; do
-  python scripts/generate_eot_taa_clean.py --pascalvoc_root <VOC2012> --model_name dinov2_vitb14 --K 8 --seed $s
-  python scripts/statistical_analysis.py collect --pascalvoc_root <VOC2012> --model_name dinov2_vitb14 \
-      --new_cache_dir ./outputs/cached_images_clean_seed$s --seed $s \
-      --out ./outputs/results/stats_perimage_vitb14_seed$s.npz
-done
-python scripts/statistical_analysis.py analyze --npz ./outputs/results/stats_perimage_vitb14_seed{0,1,2}.npz \
-    --latex_out ./outputs/results/table_stats_vitb14.tex --json_out ./outputs/results/table_stats_vitb14.json
-```
 
 
